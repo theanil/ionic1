@@ -9,7 +9,7 @@
  * Copyright 2015 Drifty Co.
  * http://drifty.com/
  *
- * Ionic, v1.2.4-nightly-2026
+ * Ionic, v1.2.4
  * A powerful HTML5 mobile app framework.
  * http://ionicframework.com/
  *
@@ -25,7 +25,7 @@
 // build processes may have already created an ionic obj
 window.ionic = window.ionic || {};
 window.ionic.views = {};
-window.ionic.version = '1.2.4-nightly-2026';
+window.ionic.version = '1.2.4';
 
 (function (ionic) {
 
@@ -734,7 +734,7 @@ window.ionic.version = '1.2.4-nightly-2026';
     // whatever lookup was done to find this element failed to find it
     // so we can't listen for events on it.
     if(element === null) {
-      void 0;
+      console.error('Null element passed to gesture (element does not exist). Not listening for gesture');
       return this;
     }
 
@@ -2191,7 +2191,7 @@ window.ionic.version = '1.2.4-nightly-2026';
         self.platforms.push('webview');
         if (!(!window.cordova && !window.PhoneGap && !window.phonegap)) {
           self.platforms.push('cordova');
-        } else if (typeof window.forge === 'object') {
+        } else if (window.forge) {
           self.platforms.push('trigger');
         }
       } else {
@@ -2231,7 +2231,7 @@ window.ionic.version = '1.2.4-nightly-2026';
      * @returns {boolean} Check if we are running within a WebView (such as Cordova).
      */
     isWebView: function() {
-      return !(!window.cordova && !window.PhoneGap && !window.phonegap && window.forge !== 'object');
+      return !(!window.cordova && !window.PhoneGap && !window.phonegap && !window.forge);
     },
     /**
      * @ngdoc method
@@ -2455,7 +2455,9 @@ window.ionic.version = '1.2.4-nightly-2026';
   function verifyPlatformReady() {
     setTimeout(function() {
       if(!self.isReady && self.isWebView()) {
-        void 0;
+        console.warn('Possible issue: deviceready did not fire in a reasonable amount of time. ' +
+        'This can be caused by plugins in an inconsistent state. One possible solution: uninstall/remove all ' +
+        'plugins and reinstall them. Additionally, one or more plugins might be faulty or out of date.');
       }
     }, platformReadyTimer);
   }
@@ -3271,7 +3273,7 @@ ionic.DomUtil.ready(function() {
             eleToActivate = ele;
             break;
           }
-          if (ele.classList && ele.classList.contains('button')) {
+          if (ele.classList.contains('button')) {
             eleToActivate = ele;
             break;
           }
@@ -6982,7 +6984,7 @@ ionic.scroll = {
 (function(ionic) {
   var NOOP = function() {};
   var deprecated = function(name) {
-    void 0;
+    console.error('Method not available in native scrolling: ' + name);
   };
   ionic.views.ScrollNative = ionic.views.View.inherit({
 
@@ -50344,7 +50346,7 @@ angular.module('ui.router.state')
  * Copyright 2015 Drifty Co.
  * http://drifty.com/
  *
- * Ionic, v1.2.4-nightly-2026
+ * Ionic, v1.2.4
  * A powerful HTML5 mobile app framework.
  * http://ionicframework.com/
  *
@@ -51247,7 +51249,7 @@ function($rootScope, $state, $location, $window, $timeout, $ionicViewSwitcher, $
         // create an element from the viewLocals template
         ele = $ionicViewSwitcher.createViewEle(viewLocals);
         if (this.isAbstractEle(ele, viewLocals)) {
-          void 0;
+          console.log('VIEW', 'abstractView', DIRECTION_NONE, viewHistory.currentView);
           return {
             action: 'abstractView',
             direction: DIRECTION_NONE,
@@ -51368,7 +51370,7 @@ function($rootScope, $state, $location, $window, $timeout, $ionicViewSwitcher, $
         }
       }
 
-      void 0;
+      console.log('VIEW', action, direction, viewHistory.currentView);
 
       hist.cursor = viewHistory.currentView.index;
 
@@ -52719,7 +52721,6 @@ function($ionicLoadingConfig, $ionicBody, $ionicTemplateLoader, $ionicBackdrop, 
  * @ngdoc service
  * @name $ionicModal
  * @module ionic
- * @codepen gblny
  * @description
  *
  * Related: {@link ionic.controller:ionicModal ionicModal controller}.
@@ -52765,7 +52766,7 @@ function($ionicLoadingConfig, $ionicBody, $ionicTemplateLoader, $ionicBackdrop, 
  *   $scope.closeModal = function() {
  *     $scope.modal.hide();
  *   };
- *   // Cleanup the modal when we're done with it!
+ *   //Cleanup the modal when we're done with it!
  *   $scope.$on('$destroy', function() {
  *     $scope.modal.remove();
  *   });
@@ -60218,17 +60219,13 @@ IonicModule.directive('exposeAsideWhen', ['$window', function($window) {
     require: '^ionSideMenus',
     link: function($scope, $element, $attr, sideMenuCtrl) {
 
-      var prevInnerWidth = $window.innerWidth;
-      var prevInnerHeight = $window.innerHeight;
-
-      ionic.on('resize', function() {
-        if (prevInnerWidth === $window.innerWidth && prevInnerHeight === $window.innerHeight) {
-          return;
-        }
-        prevInnerWidth = $window.innerWidth;
-        prevInnerHeight = $window.innerHeight;
+      // Setup a match media query listener that triggers a ui change only when a change
+      // in media matching status occurs
+      var mq = $attr.exposeAsideWhen == 'large' ? '(min-width:768px)' : $attr.exposeAsideWhen;
+      var mql = $window.matchMedia(mq);
+      mql.addListener(function() {
         onResize();
-      }, $window);
+      });
 
       function checkAsideExpose() {
         var mq = $attr.exposeAsideWhen == 'large' ? '(min-width:768px)' : $attr.exposeAsideWhen;
@@ -63196,7 +63193,6 @@ IonicModule
  * @ngdoc directive
  * @name ionSlideBox
  * @module ionic
- * @codepen AjgEB
  * @deprecated will be removed in the next Ionic release in favor of the new ion-slides component.
  * Don't depend on the internal behavior of this widget.
  * @delegate ionic.service:$ionicSlideBoxDelegate
@@ -63204,6 +63200,7 @@ IonicModule
  * @description
  * The Slide Box is a multi-page container where each page can be swiped or dragged between:
  *
+ * ![SlideBox](http://ionicframework.com.s3.amazonaws.com/docs/controllers/slideBox.gif)
  *
  * @usage
  * ```html
@@ -63441,7 +63438,7 @@ function($animate, $timeout, $compile, $ionicSlideBoxDelegate, $ionicHistory, $i
  *
  * @usage
  * ```html
- * <ion-slides  options="options" slider="data.slider">
+ * <ion-slides on-slide-changed="slideHasChanged($index)">
  *   <ion-slide-page>
  *     <div class="box blue"><h1>BLUE</h1></div>
  *   </ion-slide-page>
@@ -63454,18 +63451,9 @@ function($animate, $timeout, $compile, $ionicSlideBoxDelegate, $ionicHistory, $i
  * </ion-slides>
  * ```
  *
- * ```js
- * $scope.options = {
- *   loop: false,
- *   effect: fade,
- *   speed: 500,
- * }
- * $scope.data = {};
- * $scope.$watch('data.slider', function(nv, ov) {
- *   $scope.slider = $scope.data.slider;
- * })
- * ```
- *
+ * @param {string=} delegate-handle The handle used to identify this slideBox
+ * with {@link ionic.service:$ionicSlideBoxDelegate}.
+ * @param {object=} options to pass to the widget. See the full ist here: [http://www.idangero.us/swiper/api/](http://www.idangero.us/swiper/api/)
  */
 IonicModule
 .directive('ionSlides', [
